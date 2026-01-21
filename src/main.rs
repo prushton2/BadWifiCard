@@ -13,7 +13,6 @@ enum State {
 fn main() {
     let mut state = State::Starting;
     loop {
-        println!("{:?}", state);
         match state {
             State::Starting => {
                 if check_internet() {
@@ -23,6 +22,7 @@ fn main() {
                 }
             },
             State::ConnectionNotFound(d) => {
+                println!("Failed to find connection ({})", d);
                 if d >= 4 {
                     reboot()
                 }
@@ -37,15 +37,17 @@ fn main() {
                 }
             },
             State::LostConnection(d) => {
+                println!("Lost connection ({})", d);
                 if d >= 2 {
                     reboot();
                 }
-                if !check_internet() {
-                    state = State::LostConnection(d + 1)
+                match check_internet() {
+                    true => state = State::Connected,
+                    false => state = State::LostConnection(d + 1)
                 }
             }
         }
-        std::thread::sleep(Duration::from_secs(5));
+        thread::sleep(Duration::from_secs(10));
     }
 }
 
@@ -56,7 +58,7 @@ fn reboot() {
 
 fn check_internet() -> bool {
     let client = reqwest::blocking::Client::builder()
-        .user_agent("aaaa")
+        .user_agent("https://github.com/prushton2/BadWifiCard")
         .build()
         .unwrap();
 
