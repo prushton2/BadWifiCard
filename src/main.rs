@@ -64,14 +64,14 @@ fn check_internet() -> bool {
 
     for url in urls {
         let res = client.head(url).send();
-    
+        
         match res {
-            Err(d) if d.is_connect() => {
-                return false
-            },
-            _ => {}
+            Err(d) if d.is_connect() => {},
+            _ => {
+                return true
+            }
         }
     }
 
-    return true
+    return false
 }
